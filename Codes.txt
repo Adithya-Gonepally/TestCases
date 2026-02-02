@@ -1,0 +1,275 @@
+package pageObjects;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.*;
+
+import org.openqa.selenium.ElementClickInterceptedException;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import utilities.ExcelUtility;
+
+public class UpComingBikes  extends BasePage{
+
+    Actions act = new Actions(driver);
+    JavascriptExecutor js = (JavascriptExecutor) driver;
+    String path = System.getProperty("user.dir")+"//TestData//EmailData.xlsx";
+    ExcelUtility ex = new ExcelUtility(path);
+
+    public UpComingBikes(WebDriver driver) {
+        super(driver);
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+    }
+
+    @FindBy(xpath = "//span[contains(text(),'NEW BI')]")
+    WebElement newBikes;
+
+    @FindBy(xpath = "//a[@title='Upcoming Bikes']")
+    WebElement upcomingBikes;
+
+    @FindBy(xpath = "//a[@title='upcoming Yamaha bikes']")
+    WebElement brandName;
+
+    @FindBy(xpath = "//span[text()='View More Bikes ']")
+    WebElement viewMoreBikes;
+
+    @FindBy(xpath = "//div[contains(text(),'Expected')]/parent::div")
+    public static List<WebElement> bikeDetails;
+
+
+    // hover over new bikes
+    public void hoveronnewBikess(){
+        wait.until(ExpectedConditions.visibilityOf(newBikes));
+        act.moveToElement(newBikes).perform();
+    }
+
+    // click on upcoming bikes
+    public void upcomingBikess(){
+        wait.until(ExpectedConditions.visibilityOf(upcomingBikes));
+        wait.until(ExpectedConditions.elementToBeClickable(upcomingBikes));
+        upcomingBikes.click();
+    }
+
+
+    public void scrollToElement(WebElement element) {
+        wait.until(ExpectedConditions.visibilityOf(element));
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", element);
+        wait.until(ExpectedConditions.elementToBeClickable(element));
+    }
+
+    public void safeClick(WebElement element) {
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(element));
+            element.click();
+        } catch (ElementClickInterceptedException e) {
+            js.executeScript("arguments[0].click();", element);
+        }
+    }
+
+    //select honda Bike as model
+    public void selectBikeModel() {
+       scrollToElement(brandName);
+       wait.until(ExpectedConditions.elementToBeClickable(brandName));
+       safeClick(brandName);
+    }
+
+
+
+
+    public String cleaning(String s){
+        String cleaned = s.replace(".","")
+                .replace(" ","")
+                .replace("Rs","");
+        if(cleaned.contains("Lakh")){
+            cleaned = cleaned.replace("Lakh","000");
+        }
+        cleaned = cleaned.replace(",","");
+        return cleaned;
+    }
+
+    // retrieve bikes under specific price range
+    public void bikesDetails() throws IOException {
+        scrollToElement(viewMoreBikes);
+        wait.until(ExpectedConditions.elementToBeClickable(viewMoreBikes));
+        if(viewMoreBikes.isDisplayed()){
+            safeClick(viewMoreBikes);
+        }
+        int rowNum = 1;
+        for(WebElement detail : bikeDetails){
+            String value = detail.getText();
+            String[] details = value.split("\n");
+            if(Integer.parseInt(cleaning(details[1])) < 600000){
+                //System.out.println("Bike "+count);
+                for(int i=0;i<=2 ;i++){
+                    ex.setCellValue("Sheet2",rowNum,i,details[i]);
+                }
+                rowNum+=1;
+            }
+        }
+    }
+
+
+}
+--------------------
+package pageObjects;
+
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import pageObjects.UpComingBikes;
+import utilities.ExcelUtility;
+
+import java.io.IOException;
+import java.time.Duration;
+import java.util.List;
+
+public class usedCars extends BasePage{
+    public usedCars(WebDriver driver) {
+        super(driver);
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+    }
+
+    Actions act=new Actions(driver);
+    JavascriptExecutor js = (JavascriptExecutor)driver;
+    String path = System.getProperty("user.dir")+"//TestData//EmailData.xlsx";
+    ExcelUtility ex = new ExcelUtility(path);
+
+    //Locating More DropDown
+    @FindBy(xpath="//span[text()='MORE']/parent::li")
+    WebElement more;
+
+    //Clicking Used Cars
+    @FindBy(xpath="//a[@title='Used Cars' and text()='Used Cars']")
+    WebElement usedCars;
+
+    //Clicking on Chennai
+    @FindBy(xpath="//a[@title='Chennai' and contains(.,'Chennai') ]")
+    WebElement chennaiClick;
+
+    //Loating Popular Models
+    @FindBy(xpath="//div[@class='gsc_thin_scroll']/descendant::label")
+    static List<WebElement> allmodels;
+
+    //Locating Popular Models Text
+    @FindBy(xpath = "//div[contains(text(),'Pop')]")
+    WebElement popular;
+
+    public void hoverOverMore(){
+        wait.until(ExpectedConditions.visibilityOf(more));
+        act.moveToElement(more).pause(Duration.ofSeconds(1)).perform();
+    }
+
+    public void scrollToElement(WebElement element) {
+        wait.until(ExpectedConditions.visibilityOf(element));
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", element);
+        wait.until(ExpectedConditions.elementToBeClickable(element));
+    }
+
+    public void clickUsedCars(){
+        wait.until(ExpectedConditions.visibilityOf(usedCars));
+        wait.until(ExpectedConditions.elementToBeClickable(usedCars));
+        usedCars.click();
+    }
+
+    public void clickChennai(){
+        chennaiClick.click();
+    }
+
+    public void allModels() throws IOException {
+        scrollToElement(allmodels.get(allmodels.size()-1));
+        wait.until(ExpectedConditions.visibilityOf(allmodels.get(0)));
+        int cellNum = 0;
+        int row = 1;
+        for (WebElement i:allmodels){
+            String data = i.getText();
+            ex.setCellValue("Sheet3",row,cellNum,data);
+            System.out.println(data);
+            row++;
+        }
+    }
+
+}
+
+-----------------------
+package pageObjects;
+
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import testBase.BaseClass;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+public class InvalidLogin extends BasePage {
+
+    public InvalidLogin(WebDriver driver){
+        super(driver);
+        wait = new WebDriverWait(driver,Duration.ofSeconds(10));
+    }
+    //Locators
+    @FindBy(xpath="//div[@id='des_lIcon']")
+    WebElement loginIcon;
+    @FindBy(xpath="//div[@class='lgn-sc c-p txt-l pl-30 pr-30 googleSignIn']")
+    WebElement googleSignin;
+    @FindBy(xpath="//input[@type='email']")
+    WebElement userInput;
+    @FindBy(xpath="//span[text()='Next']")
+    WebElement nextButton;
+    @FindBy(xpath = "//div[contains(text(),'Enter a ')]")
+    WebElement errormsg;
+
+    //Actions
+    public void clickLogin(){
+        loginIcon.click();
+    }
+
+    public void clickGoogleSignin() throws InterruptedException {
+        wait.until(ExpectedConditions.visibilityOf(googleSignin));
+        wait.until(ExpectedConditions.elementToBeClickable(googleSignin));
+        googleSignin.click();
+    }
+
+    public void switchingToSigninPage() {
+
+        wait.until(ExpectedConditions.numberOfWindowsToBe(2));
+        Set<String> windowIDs = driver.getWindowHandles();
+        List<String> windowList = new ArrayList<>(windowIDs);
+        driver.switchTo().window(windowList.get(1));
+    }
+
+
+    public void givingUserInput(String email){
+        userInput.sendKeys(email);
+    }
+
+    public void clickNextButton(){
+        nextButton.click();
+    }
+
+    public void waitForErrorMsg(){
+        wait.until(ExpectedConditions.visibilityOf(errormsg));
+    }
+
+
+
+
+}
